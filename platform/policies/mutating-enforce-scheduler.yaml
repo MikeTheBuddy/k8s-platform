@@ -1,0 +1,21 @@
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: enforce-kai-scheduler
+spec:
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["pods"]
+      operations: ["CREATE"]
+    namespaceSelector:
+      matchLabels:
+        naas.platform/user-namespace: "true"
+  mutations:
+  - patchType: JSONPatch
+    jsonPatch:
+      expression: |
+        [
+          JSONPatch{op: "add", path: "/spec/schedulerName", value: "kai-scheduler"}
+        ]

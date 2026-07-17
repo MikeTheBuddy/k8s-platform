@@ -1,0 +1,40 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-resource-requests
+spec:
+  autogen:
+    podControllers:
+      controllers:
+      - deployments
+      - jobs
+      - statefulsets
+      - cronjobs
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["pods"]
+      operations: ["CREATE"]
+    namespaceSelector:
+      matchLabels:
+        naas.platform/user-namespace: "true"
+  validations:
+  - expression: >
+      object.spec.containers.all(c,
+        has(c.resources) &&
+        has(c.resources.requests) &&
+        has(c.resources.requests.cpu) &&
+        has(c.resources.requests.memory)
+      )
+    message: "All containers must specify CPU and memory resource requests"
+  - expression: >
+      object.spec.containers.all(c,
+        has(c.resources) &&
+        has(c.resources.limits) &&
+        has(c.resources.limits.cpu) &&
+        has(c.resources.limits.memory)
+      )
+    message: "All containers must specify CPU and memory resource limits"

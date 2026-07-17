@@ -1,0 +1,33 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: block-host-access
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["pods"]
+      operations: ["CREATE"]
+    namespaceSelector:
+      matchLabels:
+        naas.platform/user-namespace: "true"
+  validations:
+  - expression: >
+      !has(object.spec.hostPID) || object.spec.hostPID == false
+    message: "hostPID is not allowed in user namespaces"
+  - expression: >
+      !has(object.spec.hostNetwork) || object.spec.hostNetwork == false
+    message: "hostNetwork is not allowed in user namespaces"
+  - expression: >
+      !has(object.spec.hostIPC) || object.spec.hostIPC == false
+    message: "hostIPC is not allowed in user namespaces"
+  - expression: >
+      object.spec.containers.all(c,
+        !has(c.securityContext) ||
+        !has(c.securityContext.privileged) ||
+        c.securityContext.privileged == false
+      )
+    message: "Privileged containers are not allowed in user namespaces"
