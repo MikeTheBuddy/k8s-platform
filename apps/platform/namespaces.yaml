@@ -10,9 +10,7 @@ spec:
   source:
     repoURL: https://github.com/MikeTheBuddy/k8s-platform
     targetRevision: HEAD
-    path: platform/namespaces
-    directory:
-      recurse: false
+    path: apps/platform/namespaces
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
