@@ -5,6 +5,7 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-2"
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
 spec:
   project: default
   source:
@@ -23,8 +24,8 @@ spec:
   - group: apiextensions.k8s.io
     kind: CustomResourceDefinition
     jqPathExpressions:
-    - .spec.conversion.webhook.clientConfig.caBundle
     - .status
+    - .spec.conversion.webhook.clientConfig.caBundle
   syncPolicy:
     automated:
       prune: true
