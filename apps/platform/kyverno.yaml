@@ -13,9 +13,18 @@ spec:
     targetRevision: "3.8.2"
     helm:
       releaseName: kyverno
+      values: |
+        config:
+          preserve: false
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
+  ignoreDifferences:
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+    jqPathExpressions:
+    - .spec.conversion.webhook.clientConfig.caBundle
+    - .status
   syncPolicy:
     automated:
       prune: true
