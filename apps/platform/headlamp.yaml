@@ -21,6 +21,19 @@ spec:
           watchPlugins: true
         pluginsManager:
           enabled: true
+        podSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          fsGroup: 1000
+          seccompProfile:
+            type: RuntimeDefault
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
   destination:
     server: https://kubernetes.default.svc
     namespace: headlamp
