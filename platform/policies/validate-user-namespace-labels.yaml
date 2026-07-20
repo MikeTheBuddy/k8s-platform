@@ -1,0 +1,24 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: validate-user-namespace-labels
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["namespaces"]
+      operations: ["CREATE", "UPDATE"]
+  matchConditions:
+  - name: is-user-namespace
+    expression: >
+      'naas.platform/user-namespace' in object.metadata.labels &&
+      object.metadata.labels['naas.platform/user-namespace'] == 'true'
+  validations:
+  - expression: >
+      'naas.platform/tier' in object.metadata.labels &&
+      object.metadata.labels['naas.platform/tier'] in ['free', 'standard', 'pro', 'special']
+    message: >
+      User namespaces must have a 'naas.platform/tier' label set to one of: free, standard, pro, special.

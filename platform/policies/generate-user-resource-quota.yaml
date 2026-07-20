@@ -1,0 +1,106 @@
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: generate-user-resource-quota
+spec:
+  evaluation:
+    synchronize:
+      enabled: true
+    generateExisting:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["namespaces"]
+      operations: ["CREATE", "UPDATE"]
+  matchConditions:
+  - name: is-user-namespace
+    expression: >
+      'naas.platform/user-namespace' in object.metadata.labels &&
+      object.metadata.labels['naas.platform/user-namespace'] == 'true'
+  - name: is-not-special-tier
+    expression: >
+      !('naas.platform/tier' in object.metadata.labels) ||
+      object.metadata.labels['naas.platform/tier'] != 'special'
+  variables:
+  - name: nsName
+    expression: "object.metadata.name"
+  - name: tier
+    expression: >
+      'naas.platform/tier' in object.metadata.labels ?
+      object.metadata.labels['naas.platform/tier'] :
+      'free'
+  - name: freeQuota
+    expression: >
+      [
+        {
+          "kind": dyn("ResourceQuota"),
+          "apiVersion": dyn("v1"),
+          "metadata": dyn({
+            "name": "tier-quota",
+            "namespace": string(variables.nsName)
+          }),
+          "spec": dyn({
+            "hard": dyn({
+              "requests.cpu": dyn("0.1"),
+              "limits.cpu": dyn("0.2"),
+              "requests.memory": dyn("128Mi"),
+              "limits.memory": dyn("128Mi"),
+            })
+          })
+        }
+      ]
+  - name: standardQuota
+    expression: >
+      [
+        {
+          "kind": dyn("ResourceQuota"),
+          "apiVersion": dyn("v1"),
+          "metadata": dyn({
+            "name": "tier-quota",
+            "namespace": string(variables.nsName)
+          }),
+          "spec": dyn({
+            "hard": dyn({
+              "requests.cpu": dyn("0.25"),
+              "limits.cpu": dyn("0.5"),
+              "requests.memory": dyn("512Mi"),
+              "limits.memory": dyn("512Mi"),
+            })
+          })
+        }
+      ]
+  - name: proQuota
+    expression: >
+      [
+        {
+          "kind": dyn("ResourceQuota"),
+          "apiVersion": dyn("v1"),
+          "metadata": dyn({
+            "name": "tier-quota",
+            "namespace": string(variables.nsName)
+          }),
+          "spec": dyn({
+            "hard": dyn({
+              "requests.cpu": dyn("1"),
+              "limits.cpu": dyn("2"),
+              "requests.memory": dyn("1Gi"),
+              "limits.memory": dyn("1Gi"),
+            })
+          })
+        }
+      ]
+  generate:
+  - expression: >
+      variables.tier == 'free' ?
+      generator.Apply(variables.nsName, variables.freeQuota) :
+      true
+  - expression: >
+      variables.tier == 'standard' ?
+      generator.Apply(variables.nsName, variables.standardQuota) :
+      true
+  - expression: >
+      variables.tier == 'pro' ?
+      generator.Apply(variables.nsName, variables.proQuota) :
+      true
