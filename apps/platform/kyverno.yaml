@@ -53,6 +53,7 @@ spec:
     managedNamespaceMetadata:
       labels:
         naas.platform/observability: "true"
+        release: prometheus
     syncOptions:
       - CreateNamespace=true
       - Replace=true
