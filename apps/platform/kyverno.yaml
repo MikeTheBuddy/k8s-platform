@@ -15,8 +15,12 @@ spec:
     helm:
       releaseName: kyverno
       values: |
-        config:
-          preserve: false
+        metricsConfig:
+          enabled: true
+        serviceMonitor:
+          enabled: true
+          namespace: kyverno
+          interval: 30s
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
