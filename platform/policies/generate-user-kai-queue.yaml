@@ -50,12 +50,12 @@ spec:
             "parentQueue": dyn("normal-root"),
             "resources": dyn({
               "cpu": dyn({
-                "quota": int(variables.tierValues.kai.cpu),
-                "limit": int(variables.tierValues.kai.cpu) * 2
+                "quota": int(string(variables.tierValues.kai.cpu)),
+                "limit": int(string(variables.tierValues.kai.cpu)) * 2
               }),
               "memory": dyn({
-                "quota": int(variables.tierValues.kai.memory),
-                "limit": int(variables.tierValues.kai.memory)
+                "quota": int(string(variables.tierValues.kai.memory)),
+                "limit": int(string(variables.tierValues.kai.memory))
               })
             })
           })
