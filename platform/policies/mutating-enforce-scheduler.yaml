@@ -17,5 +17,6 @@ spec:
     jsonPatch:
       expression: |
         [
-          JSONPatch{op: "add", path: "/spec/schedulerName", value: "kai-scheduler"}
+          JSONPatch{op: "add", path: "/spec/schedulerName", value: "kai-scheduler"},
+          JSONPatch{op: "add", path: "/metadata/labels/kai.scheduler~1queue", value: namespaceObject.metadata.name}
         ]
