@@ -55,12 +55,12 @@ spec:
             "parentQueue": dyn("normal-root"),
             "resources": dyn({
               "cpu": dyn({
-                "quota": int(string(variables.tierValues.kai.cpu)),
-                "limit": int(string(variables.tierValues.kai.cpu)) * 2
+                "quota": dyn(variables.tierValues.kai.cpu),
+                "limit": dyn(variables.tierValues.kai.cpu)
               }),
               "memory": dyn({
-                "quota": int(string(variables.tierValues.kai.memory)),
-                "limit": int(string(variables.tierValues.kai.memory))
+                "quota": dyn(variables.tierValues.kai.memory),
+                "limit": dyn(variables.tierValues.kai.memory)
               })
             })
           })
@@ -68,4 +68,4 @@ spec:
       ]
   generate:
   - expression: >
-      generator.Apply(variables.nsName, variables.queue)
+      generator.Apply("", variables.queue)
