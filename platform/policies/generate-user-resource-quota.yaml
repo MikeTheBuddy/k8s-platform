@@ -33,10 +33,17 @@ spec:
       'naas.platform/tier' in object.metadata.labels ?
       object.metadata.labels['naas.platform/tier'] :
       'free'
+  - name: configData
+    expression: >
+      globalContext.Get("naas-tier-config", "").items.filter(cm,
+      cm.metadata.name == 'naas-tier-config')[0].data
   - name: tierValues
     expression: >
-      yaml.parse(globalContext.Get("naas-tier-config", "").items.filter(cm,
-      cm.metadata.name == 'naas-tier-config')[0].data[variables.tier])
+      yaml.parse(
+        variables.tier == 'free' ? variables.configData['free'] :
+        variables.tier == 'standard' ? variables.configData['standard'] :
+        variables.configData['pro']
+      )
   - name: quota
     expression: >
       [
