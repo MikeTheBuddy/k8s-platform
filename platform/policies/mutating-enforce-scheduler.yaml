@@ -13,10 +13,16 @@ spec:
       matchLabels:
         naas.platform/user-namespace: "true"
   mutations:
-  - patchType: JSONPatch
-    jsonPatch:
+  - patchType: ApplyConfiguration
+    applyConfiguration:
       expression: |
-        [
-          JSONPatch{op: "add", path: "/spec/schedulerName", value: "kai-scheduler"},
-          JSONPatch{op: "add", path: "/metadata/labels/kai.scheduler~1queue", value: namespaceObject.metadata.name}
-        ]
+        Object{
+          metadata: Object.metadata{
+            labels: {
+              "kai.scheduler/queue": namespaceObject.metadata.name
+            }
+          },
+          spec: Object.spec{
+            schedulerName: "kai-scheduler"
+          }
+        }
