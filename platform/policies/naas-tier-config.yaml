@@ -14,8 +14,8 @@ data:
       request: "128Mi"
       limit: "128Mi"
     kai:
-      cpu: "100"
-      memory: "128"
+      cpu: 100
+      memory: 128
   standard: |
     cpu:
       request: "250m"
@@ -24,8 +24,8 @@ data:
       request: "512Mi"
       limit: "512Mi"
     kai:
-      cpu: "250"
-      memory: "512"
+      cpu: 250
+      memory: 512
   pro: |
     cpu:
       request: "1000m"
@@ -34,5 +34,5 @@ data:
       request: "1Gi"
       limit: "1Gi"
     kai:
-      cpu: "1000"
-      memory: "1024"
+      cpu: 1000
+      memory: 1024
