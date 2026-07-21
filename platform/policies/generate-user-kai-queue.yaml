@@ -52,6 +52,11 @@ spec:
             "name": string(variables.nsName)
           }),
           "spec": dyn({
+            "displayName": dyn(
+              variables.tier == 'free' ? 'Free Tier' :
+              variables.tier == 'standard' ? 'Standard Tier' :
+              'Pro Tier'
+            ),
             "parentQueue": dyn("normal-root"),
             "resources": dyn({
               "cpu": dyn({
