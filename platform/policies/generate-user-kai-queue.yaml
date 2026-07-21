@@ -1,7 +1,7 @@
 apiVersion: policies.kyverno.io/v1
 kind: GeneratingPolicy
 metadata:
-  name: generate-user-resource-quota
+  name: generate-user-kai-queue
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
@@ -37,26 +37,30 @@ spec:
     expression: >
       yaml.parse(globalContext.Get("naas-tier-config", "").items.filter(cm,
       cm.metadata.name == 'naas-tier-config')[0].data[variables.tier])
-  - name: quota
+  - name: queue
     expression: >
       [
         {
-          "kind": dyn("ResourceQuota"),
-          "apiVersion": dyn("v1"),
+          "kind": dyn("Queue"),
+          "apiVersion": dyn("scheduling.run.ai/v2"),
           "metadata": dyn({
-            "name": "tier-quota",
-            "namespace": string(variables.nsName)
+            "name": string(variables.nsName)
           }),
           "spec": dyn({
-            "hard": dyn({
-              "requests.cpu": dyn(string(variables.tierValues.cpu.request)),
-              "limits.cpu": dyn(string(variables.tierValues.cpu.limit)),
-              "requests.memory": dyn(string(variables.tierValues.memory.request)),
-              "limits.memory": dyn(string(variables.tierValues.memory.limit))
+            "parentQueue": dyn("normal-root"),
+            "resources": dyn({
+              "cpu": dyn({
+                "quota": int(variables.tierValues.kai.cpu),
+                "limit": int(variables.tierValues.kai.cpu) * 2
+              }),
+              "memory": dyn({
+                "quota": int(variables.tierValues.kai.memory),
+                "limit": int(variables.tierValues.kai.memory)
+              })
             })
           })
         }
       ]
   generate:
   - expression: >
-      generator.Apply(variables.nsName, variables.quota)
+      generator.Apply(variables.nsName, variables.queue)
