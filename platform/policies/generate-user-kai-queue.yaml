@@ -35,8 +35,13 @@ spec:
       'free'
   - name: tierValues
     expression: >
-      yaml.parse(globalContext.Get("naas-tier-config", "").items.filter(cm,
-      cm.metadata.name == 'naas-tier-config')[0].data[?variables.tier].orValue(''))
+      yaml.parse(
+        variables.tier == 'free' ?
+          resource.Get("v1", "configmaps", "kyverno", "naas-tier-config").data['free'] :
+        variables.tier == 'standard' ?
+          resource.Get("v1", "configmaps", "kyverno", "naas-tier-config").data['standard'] :
+          resource.Get("v1", "configmaps", "kyverno", "naas-tier-config").data['pro']
+      )
   - name: queue
     expression: >
       [
