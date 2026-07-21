@@ -1,0 +1,29 @@
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: mutate-add-observability-label
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["namespaces"]
+      operations: ["CREATE", "UPDATE"]
+  matchConditions:
+  - name: is-user-namespace
+    expression: >
+      'naas.platform/user-namespace' in object.metadata.labels &&
+      object.metadata.labels['naas.platform/user-namespace'] == 'true'
+  mutations:
+  - patchType: ApplyConfiguration
+    applyConfiguration:
+      expression: |
+        Object{
+          metadata: Object.metadata{
+            labels: {
+              "naas.platform/observability": "true"
+            }
+          }
+        }

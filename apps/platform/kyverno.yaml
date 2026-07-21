@@ -17,10 +17,26 @@ spec:
       values: |
         metricsConfig:
           enabled: true
-        serviceMonitor:
-          enabled: true
-          namespace: kyverno
-          interval: 30s
+        admissionController:
+          serviceMonitor:
+            enabled: true
+            namespace: kyverno
+            interval: 30s
+        backgroundController:
+          serviceMonitor:
+            enabled: true
+            namespace: kyverno
+            interval: 30s
+        reportsController:
+          serviceMonitor:
+            enabled: true
+            namespace: kyverno
+            interval: 30s
+        cleanupController:
+          serviceMonitor:
+            enabled: true
+            namespace: kyverno
+            interval: 30s
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
@@ -34,6 +50,9 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    managedNamespaceMetadata:
+      labels:
+        naas.platform/observability: "true"
     syncOptions:
       - CreateNamespace=true
       - Replace=true
