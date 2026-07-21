@@ -42,7 +42,6 @@ spec:
         pod-security.kubernetes.io/enforce: privileged
         pod-security.kubernetes.io/enforce-version: latest
         naas.platform/observability: "true"
-        release: prometheus
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true

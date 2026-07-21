@@ -23,6 +23,7 @@ spec:
             serviceMonitorNamespaceSelector:
               matchLabels:
                 naas.platform/observability: "true"
+            serviceMonitorSelector: {}
         alertmanager:
           enabled: true
           alertmanagerSpec:
