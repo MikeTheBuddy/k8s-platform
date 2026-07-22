@@ -1,18 +1,20 @@
 apiVersion: policies.kyverno.io/v1
 kind: MutatingPolicy
 metadata:
-  name: mutate-on-configmap-change
+  name: mutate-configmap-resourcequota
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   evaluation:
     mutateExisting:
       enabled: true
   matchConstraints:
     resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        resources: ["configmaps"]
-        operations: ["UPDATE"]
-        resourceNames: ["naas-tier-config"]
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["configmaps"]
+      operations: ["UPDATE"]
+      resourceNames: ["naas-tier-config"]
     namespaceSelector:
       matchLabels:
         kubernetes.io/metadata.name: "naas-system"
@@ -21,23 +23,100 @@ spec:
       matchLabels:
         naas.platform/user-namespace: "true"
     resourceRules:
-      - apiGroups: [""]
-        apiVersions: ["v1"]
-        resources: ["resourcequotas"]
-        resourceNames: ["tier-quota"]
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["resourcequotas"]
+      resourceNames: ["tier-quota"]
+  variables:
+  - name: tier
+    expression: >
+      resource.Get("v1", "namespaces", "", object.metadata.namespace).metadata.labels['naas.platform/tier']
+  - name: tierValues
+    expression: >
+      yaml.parse(
+        variables.tier == 'free' ?
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['free'] :
+        variables.tier == 'standard' ?
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['standard'] :
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['pro']
+      )
   mutations:
-    - patchType: ApplyConfiguration
-      applyConfiguration:
-        expression: >
-          let tier = resource.get("v1", "namespaces", "", Object.metadata.namespace).metadata.labels['naas.platform/tier'];
-          let tierValues = yaml.parse(resource.get("v1", "configmaps", "naas-system", "naas-tier-config").data[tier]);
-          Object{
-            spec: Object.spec{
-              hard: {
-                "requests.cpu": string(tierValues.cpu.request),
-                "limits.cpu": string(tierValues.cpu.limit),
-                "requests.memory": string(tierValues.memory.request),
-                "limits.memory": string(tierValues.memory.limit)
+  - patchType: ApplyConfiguration
+    applyConfiguration:
+      expression: >
+        variables.tier == 'special' ? Object{} :
+        Object{
+          spec: Object.spec{
+            hard: {
+              "requests.cpu": string(variables.tierValues.cpu.request),
+              "limits.cpu": string(variables.tierValues.cpu.limit),
+              "requests.memory": string(variables.tierValues.memory.request),
+              "limits.memory": string(variables.tierValues.memory.limit)
+            }
+          }
+        }
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: mutate-configmap-kaiqueue
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  evaluation:
+    mutateExisting:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["configmaps"]
+      operations: ["UPDATE"]
+      resourceNames: ["naas-tier-config"]
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: "naas-system"
+  targetMatchConstraints:
+    expression: >
+      resource.Get("scheduling.run.ai/v2", "queues", "", object.metadata.name).metadata.labels['generate.kyverno.io/trigger-kind'] == 'Namespace'
+    resourceRules:
+    - apiGroups: ["scheduling.run.ai"]
+      apiVersions: ["v2"]
+      resources: ["queues"]
+  variables:
+  - name: tier
+    expression: >
+      resource.Get("v1", "namespaces", "", object.metadata.name).metadata.labels['naas.platform/tier']
+  - name: tierValues
+    expression: >
+      yaml.parse(
+        variables.tier == 'free' ?
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['free'] :
+        variables.tier == 'standard' ?
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['standard'] :
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['pro']
+      )
+  mutations:
+  - patchType: ApplyConfiguration
+    applyConfiguration:
+      expression: >
+        variables.tier == 'special' ? Object{} :
+        Object{
+          spec: Object.spec{
+            displayName: (
+              variables.tier == 'standard' ? 'Standard Tier' :
+              variables.tier == 'pro' ? 'Pro Tier' :
+              'Free Tier'
+            ),
+            resources: Object.spec.resources{
+              cpu: Object.spec.resources.cpu{
+                quota: variables.tierValues.kai.cpu,
+                limit: variables.tierValues.kai.cpu
+              },
+              memory: Object.spec.resources.memory{
+                quota: variables.tierValues.kai.memory,
+                limit: variables.tierValues.kai.memory
               }
             }
           }
+        }
