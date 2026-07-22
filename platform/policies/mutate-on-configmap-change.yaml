@@ -1,0 +1,43 @@
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: mutate-on-configmap-change
+spec:
+  evaluation:
+    mutateExisting:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["configmaps"]
+        operations: ["UPDATE"]
+        resourceNames: ["naas-tier-config"]
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: "naas-system"
+  targetMatchConstraints:
+    namespaceSelector:
+      matchLabels:
+        naas.platform/user-namespace: "true"
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["resourcequotas"]
+        resourceNames: ["tier-quota"]
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >
+          let tier = resource.get("v1", "namespaces", "", Object.metadata.namespace).metadata.labels['naas.platform/tier'];
+          let tierValues = yaml.parse(resource.get("v1", "configmaps", "naas-system", "naas-tier-config").data[tier]);
+          Object{
+            spec: Object.spec{
+              hard: {
+                "requests.cpu": string(tierValues.cpu.request),
+                "limits.cpu": string(tierValues.cpu.limit),
+                "requests.memory": string(tierValues.memory.request),
+                "limits.memory": string(tierValues.memory.limit)
+              }
+            }
+          }
