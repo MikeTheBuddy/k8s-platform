@@ -21,10 +21,6 @@ spec:
   targetMatchConstraints:
     expression: >
       resource.Get("scheduling.run.ai/v2", "queues", "", object.metadata.namespace)
-    resourceRules:
-    - apiGroups: ["scheduling.run.ai"]
-      apiVersions: ["v2"]
-      resources: ["queues"]
   variables:
   - name: tier
     expression: >
