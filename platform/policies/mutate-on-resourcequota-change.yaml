@@ -1,7 +1,7 @@
 apiVersion: policies.kyverno.io/v1
 kind: MutatingPolicy
 metadata:
-  name: mutate-configmap-resourcequota
+  name: mutate-resourcequota-kaiqueue
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
@@ -12,21 +12,19 @@ spec:
     resourceRules:
     - apiGroups: [""]
       apiVersions: ["v1"]
-      resources: ["configmaps"]
+      resources: ["resourcequotas"]
       operations: ["UPDATE"]
-      resourceNames: ["naas-tier-config"]
-    namespaceSelector:
-      matchLabels:
-        kubernetes.io/metadata.name: "naas-system"
-  targetMatchConstraints:
+      resourceNames: ["tier-quota"]
     namespaceSelector:
       matchLabels:
         naas.platform/user-namespace: "true"
+  targetMatchConstraints:
+    expression: >
+      resource.Get("scheduling.run.ai/v2", "queues", "", object.metadata.namespace)
     resourceRules:
-    - apiGroups: [""]
-      apiVersions: ["v1"]
-      resources: ["resourcequotas"]
-      resourceNames: ["tier-quota"]
+    - apiGroups: ["scheduling.run.ai"]
+      apiVersions: ["v2"]
+      resources: ["queues"]
   variables:
   - name: tier
     expression: >
@@ -47,11 +45,20 @@ spec:
         variables.tier == 'special' ? Object{} :
         Object{
           spec: Object.spec{
-            hard: {
-              "requests.cpu": string(variables.tierValues.cpu.request),
-              "limits.cpu": string(variables.tierValues.cpu.limit),
-              "requests.memory": string(variables.tierValues.memory.request),
-              "limits.memory": string(variables.tierValues.memory.limit)
+            displayName: (
+              variables.tier == 'standard' ? 'Standard Tier' :
+              variables.tier == 'pro' ? 'Pro Tier' :
+              'Free Tier'
+            ),
+            resources: Object.spec.resources{
+              cpu: Object.spec.resources.cpu{
+                quota: variables.tierValues.kai.cpu,
+                limit: variables.tierValues.kai.cpu
+              },
+              memory: Object.spec.resources.memory{
+                quota: variables.tierValues.kai.memory,
+                limit: variables.tierValues.kai.memory
+              }
             }
           }
         }
