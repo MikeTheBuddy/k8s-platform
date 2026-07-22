@@ -14,8 +14,8 @@ metadata:
 data:
   free: |
     cpu:
-      request: "100m"
-      limit: "200m"
+      request: "150m"
+      limit: "300m"
     memory:
       request: "128Mi"
       limit: "128Mi"
