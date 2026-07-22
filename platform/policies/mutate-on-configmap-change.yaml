@@ -76,9 +76,13 @@ spec:
     namespaceSelector:
       matchLabels:
         kubernetes.io/metadata.name: "naas-system"
+  matchConditions:
+  - name: is-user-queue
+    expression: >
+      object.metadata.labels['generate.kyverno.io/trigger-kind'] == 'Namespace'
   targetMatchConstraints:
     expression: >
-      resource.Get("scheduling.run.ai/v2", "queues", "", object.metadata.name).metadata.labels['generate.kyverno.io/trigger-kind'] == 'Namespace'
+      resource.Get("scheduling.run.ai/v2", "queues", "", object.metadata.name)
     resourceRules:
     - apiGroups: ["scheduling.run.ai"]
       apiVersions: ["v2"]
