@@ -7,7 +7,7 @@ metadata:
 spec:
   evaluation:
     synchronize:
-      enabled: true
+      enabled: false
     generateExisting:
       enabled: true
   matchConstraints:
@@ -15,7 +15,7 @@ spec:
     - apiGroups: [""]
       apiVersions: ["v1"]
       resources: ["namespaces"]
-      operations: ["CREATE", "UPDATE"]
+      operations: ["CREATE"]
   matchConditions:
   - name: is-user-namespace
     expression: >
@@ -37,10 +37,10 @@ spec:
     expression: >
       yaml.parse(
         variables.tier == 'free' ?
-          resource.Get("v1", "configmaps", "kyverno", "naas-tier-config").data['free'] :
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['free'] :
         variables.tier == 'standard' ?
-          resource.Get("v1", "configmaps", "kyverno", "naas-tier-config").data['standard'] :
-          resource.Get("v1", "configmaps", "kyverno", "naas-tier-config").data['pro']
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['standard'] :
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['pro']
       )
   - name: quota
     expression: >

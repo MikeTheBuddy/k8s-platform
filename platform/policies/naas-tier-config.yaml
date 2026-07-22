@@ -1,8 +1,14 @@
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: naas-system
+
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: naas-tier-config
-  namespace: kyverno
+  namespace: naas-system
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 data:
