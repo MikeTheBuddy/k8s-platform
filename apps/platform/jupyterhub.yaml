@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jupyterhub
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://jupyterhub.github.io/helm-chart/
+    chart: jupyterhub
+    targetRevision: "4.4.0"
+    helm:
+      releaseName: jupyterhub
+      values: |
+        proxy:
+          service:
+            type: ClusterIP
+        hub:
+          config:
+            JupyterHub:
+              authenticator_class: dummy
+        singleuser:
+          storage:
+            type: none
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: jupyterhub
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    managedNamespaceMetadata:
+      labels:
+        naas.platform/observability: "true"
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
