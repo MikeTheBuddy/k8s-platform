@@ -1,0 +1,152 @@
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: generate-user-namespace-resources
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  evaluation:
+    synchronize:
+      enabled: true
+    generateExisting:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ["namespaces"]
+      operations: ["CREATE", "UPDATE"]
+  matchConditions:
+  - name: is-user-namespace
+    expression: >
+      'naas.platform/user-namespace' in object.metadata.labels &&
+      object.metadata.labels['naas.platform/user-namespace'] == 'true'
+  - name: is-not-special-tier
+    expression: >
+      !('naas.platform/tier' in object.metadata.labels) ||
+      object.metadata.labels['naas.platform/tier'] != 'special'
+  variables:
+  - name: nsName
+    expression: "object.metadata.name"
+  - name: tier
+    expression: >
+      'naas.platform/tier' in object.metadata.labels ?
+      object.metadata.labels['naas.platform/tier'] :
+      'free'
+  - name: tierValues
+    expression: >
+      yaml.parse(
+        variables.tier == 'free' ?
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['free'] :
+        variables.tier == 'standard' ?
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['standard'] :
+          resource.Get("v1", "configmaps", "naas-system", "naas-tier-config").data['pro']
+      )
+  # ============================================================
+  # STAGE 1: ResourceQuota
+  # Generates a tier-based ResourceQuota in the user namespace
+  # ============================================================
+  - name: quota
+    expression: >
+      [
+        {
+          "kind": dyn("ResourceQuota"),
+          "apiVersion": dyn("v1"),
+          "metadata": dyn({
+            "name": "tier-quota",
+            "namespace": string(variables.nsName)
+          }),
+          "spec": dyn({
+            "hard": dyn({
+              "requests.cpu": dyn(string(variables.tierValues.cpu.request)),
+              "limits.cpu": dyn(string(variables.tierValues.cpu.limit)),
+              "requests.memory": dyn(string(variables.tierValues.memory.request)),
+              "limits.memory": dyn(string(variables.tierValues.memory.limit))
+            })
+          })
+        }
+      ]
+  # ============================================================
+  # STAGE 2: KAI Queue
+  # Generates a tier-based KAI Queue at cluster scope
+  # ============================================================
+  - name: queue
+    expression: >
+      [
+        {
+          "kind": dyn("Queue"),
+          "apiVersion": dyn("scheduling.run.ai/v2"),
+          "metadata": dyn({
+            "name": string(variables.nsName)
+          }),
+          "spec": dyn({
+            "displayName": dyn(
+              variables.tier == 'free' ? 'Free Tier' :
+              variables.tier == 'standard' ? 'Standard Tier' :
+              'Pro Tier'
+            ),
+            "parentQueue": dyn("normal-root"),
+            "resources": dyn({
+              "cpu": dyn({
+                "quota": dyn(variables.tierValues.kai.cpu),
+                "limit": dyn(variables.tierValues.kai.cpu)
+              }),
+              "memory": dyn({
+                "quota": dyn(variables.tierValues.kai.memory),
+                "limit": dyn(variables.tierValues.kai.memory)
+              })
+            })
+          })
+        }
+      ]
+  # ============================================================
+  # STAGE 3: NetworkPolicy
+  # Generates a namespace isolation NetworkPolicy
+  # ============================================================
+  - name: networkPolicy
+    expression: >
+      [
+        {
+          "kind": dyn("NetworkPolicy"),
+          "apiVersion": dyn("networking.k8s.io/v1"),
+          "metadata": dyn({
+            "name": "namespace-isolation",
+            "namespace": string(variables.nsName)
+          }),
+          "spec": dyn({
+            "podSelector": dyn({}),
+            "policyTypes": dyn(["Ingress", "Egress"]),
+            "ingress": dyn([{
+              "from": dyn([{"podSelector": dyn({})}])
+            }]),
+            "egress": dyn([
+              {"to": dyn([{"podSelector": dyn({})}])},
+              {"ports": dyn([
+                {"port": dyn(53), "protocol": dyn("UDP")},
+                {"port": dyn(53), "protocol": dyn("TCP")}
+              ])},
+              {"to": dyn([{
+                "ipBlock": dyn({
+                  "cidr": dyn("0.0.0.0/0"),
+                  "except": dyn([
+                    "10.42.0.0/16",
+                    "10.43.0.0/16",
+                    "172.16.0.0/12",
+                    "192.168.0.0/16"
+                  ])
+                })
+              }])}
+            ])
+          })
+        }
+      ]
+  generate:
+  # Stage 1: ResourceQuota
+  - expression: >
+      generator.Apply(variables.nsName, variables.quota)
+  # Stage 2: KAI Queue
+  - expression: >
+      generator.Apply("", variables.queue)
+  # Stage 3: NetworkPolicy
+  - expression: >
+      generator.Apply(variables.nsName, variables.networkPolicy)
