@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/MikeTheBuddy/k8s-platform
-    targetRevision: HEAD
+    targetRevision: jupyterhub
     path: apps
     directory:
       recurse: true
