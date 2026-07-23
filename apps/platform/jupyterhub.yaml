@@ -24,6 +24,18 @@ spec:
         singleuser:
           storage:
             type: none
+          cloudMetadata:
+            blockWithIptables: false
+          profileList:
+          - display_name: "Standard Python"
+            description: "Basic Python 3 environment"
+            default: true
+            kubespawner_override:
+              image: jupyter/base-notebook:latest
+          - display_name: "Data Science"
+            description: "Python with pandas, numpy, scipy, matplotlib"
+            kubespawner_override:
+              image: jupyter/datascience-notebook:latest
   destination:
     server: https://kubernetes.default.svc
     namespace: jupyterhub
