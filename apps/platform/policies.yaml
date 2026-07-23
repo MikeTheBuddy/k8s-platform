@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/MikeTheBuddy/k8s-platform
-    targetRevision: HEAD
+    targetRevision: jupyterhub
     path: platform/policies
   destination:
     server: https://kubernetes.default.svc
