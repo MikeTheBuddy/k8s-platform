@@ -21,6 +21,16 @@ spec:
           config:
             JupyterHub:
               authenticator_class: dummy
+          networkPolicy:
+            egress:
+            - ports:
+              - port: 443
+                protocol: TCP
+              - port: 6443
+                protocol: TCP
+              to:
+              - ipBlock:
+                  cidr: 10.43.0.1/32
         singleuser:
           storage:
             type: none
