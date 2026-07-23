@@ -1,0 +1,15 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-hub-to-apiserver
+  namespace: jupyterhub
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  egress:
+  - toEntities:
+    - kube-apiserver
+  endpointSelector:
+    matchLabels:
+      app: jupyterhub
+      component: hub
