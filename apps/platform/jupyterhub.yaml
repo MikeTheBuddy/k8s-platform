@@ -26,6 +26,8 @@ spec:
           config:
             JupyterHub:
               authenticator_class: dummy
+              admin_users:
+              - admin
         singleuser:
           storage:
             type: none
