@@ -40,6 +40,7 @@ spec:
               login_service: Dex
               username_claim: name
               oauth_callback_url: https://jupyter.local/hub/oauth_callback
+              manage_groups: true
               allowed_groups:
                 - researchers
               scope:
