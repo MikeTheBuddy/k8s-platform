@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dex
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  source:
+    repoURL: https://charts.dexidp.io
+    chart: dex
+    targetRevision: "0.24.1"
+    helm:
+      releaseName: dex
+      values: |
+        config:
+          issuer: https://dex.local
+          storage:
+            type: kubernetes
+            config:
+              inCluster: true
+          staticClients:
+          - id: jupyterhub
+            name: JupyterHub
+            secret: jupyterhub-client-secret
+            redirectURIs:
+            - https://jupyter.local/hub/oauth_callback
+          staticPasswords:
+          - email: alice@university.edu
+            hash: "$2y$10$fnA.mtZg.VwoBJVpJWiheu/s0oee3twD.l28IiCxJdCS5KNpUEgDy"
+            username: alice
+            userID: "alice-001"
+          - email: bob@university.edu
+            hash: "$2y$10$fnA.mtZg.VwoBJVpJWiheu/s0oee3twD.l28IiCxJdCS5KNpUEgDy"
+            username: bob
+            userID: "bob-001"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dex
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    managedNamespaceMetadata:
+      labels:
+        naas.platform/observability: "true"
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

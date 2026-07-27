@@ -1,0 +1,40 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: jupyter-tls
+  namespace: jupyterhub
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  secretName: jupyter-tls-secret
+  issuerRef:
+    name: internal-ca-issuer
+    kind: ClusterIssuer
+  dnsNames:
+  - jupyter.local
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jupyterhub
+  namespace: jupyterhub
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+  - hosts:
+    - jupyter.local
+    secretName: jupyter-tls-secret
+  rules:
+  - host: jupyter.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: proxy-public
+            port:
+              number: 80
