@@ -32,8 +32,8 @@ spec:
               client_id: jupyterhub
               client_secret: jupyterhub-client-secret
               authorize_url: https://dex.local/auth
-              token_url: https://dex.local/token
-              userdata_url: https://dex.local/userinfo
+              token_url: https://dex.svc.cluster.local:5556/token
+              userdata_url: https://dex.svc.cluster.local:5556/userinfo
               login_service: Dex
               username_claim: email
               allow_all: true
