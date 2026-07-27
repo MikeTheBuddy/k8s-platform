@@ -32,6 +32,7 @@ spec:
               admin_users:
                 - alice
             GenericOAuthenticator:
+              claim_groups_key: groups
               client_id: jupyterhub
               client_secret: jupyterhub-client-secret
               authorize_url: https://dex.local/auth
