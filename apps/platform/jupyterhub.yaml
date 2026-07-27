@@ -23,6 +23,9 @@ spec:
           service:
             type: ClusterIP
         hub:
+          db:
+            pvc:
+              storageClassName: local-path
           config:
             JupyterHub:
               authenticator_class: generic-oauth
