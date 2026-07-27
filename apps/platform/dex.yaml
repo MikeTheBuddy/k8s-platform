@@ -28,20 +28,14 @@ spec:
             hash: "$2y$10$fnA.mtZg.VwoBJVpJWiheu/s0oee3twD.l28IiCxJdCS5KNpUEgDy"
             username: alice
             userID: "alice-001"
-            groups:
-              - researchers
           - email: bob@university.edu
             hash: "$2y$10$fnA.mtZg.VwoBJVpJWiheu/s0oee3twD.l28IiCxJdCS5KNpUEgDy"
             username: bob
             userID: "bob-001"
-            groups:
-              - researchers
           - email: dave@university.edu
             hash: "$2y$10$fnA.mtZg.VwoBJVpJWiheu/s0oee3twD.l28IiCxJdCS5KNpUEgDy"
             username: dave
             userID: "dave-001"
-            groups:
-              - janitor
           staticClients:
           - id: jupyterhub
             name: JupyterHub
