@@ -22,6 +22,7 @@ spec:
               inCluster: true
           oauth2:
             skipApprovalScreen: true
+          enablePasswordDB: true
           staticPasswords:
           - email: alice@university.edu
             hash: "$2y$10$fnA.mtZg.VwoBJVpJWiheu/s0oee3twD.l28IiCxJdCS5KNpUEgDy"
