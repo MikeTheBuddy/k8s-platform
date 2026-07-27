@@ -25,9 +25,22 @@ spec:
         hub:
           config:
             JupyterHub:
-              authenticator_class: dummy
+              authenticator_class: generic-oauth
               admin_users:
-              - admin
+                - alice
+            GenericOAuthenticator:
+              client_id: jupyterhub
+              client_secret: jupyterhub-client-secret
+              authorize_url: https://dex.local/auth
+              token_url: https://dex.local/token
+              userdata_url: https://dex.local/userinfo
+              login_service: Dex
+              username_claim: email
+              allow_all: true
+              scope:
+                - openid
+                - email
+                - profile
         singleuser:
           storage:
             type: none
