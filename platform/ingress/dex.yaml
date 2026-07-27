@@ -12,6 +12,7 @@ spec:
     kind: ClusterIssuer
   dnsNames:
   - dex.local
+  - dex.dex.svc.cluster.local
 ---
 # Environment-specific: update hostname for your domain
 apiVersion: networking.k8s.io/v1
