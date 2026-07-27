@@ -38,7 +38,7 @@ spec:
               token_url: http://dex.dex.svc.cluster.local:5556/token
               userdata_url: http://dex.dex.svc.cluster.local:5556/userinfo
               login_service: Dex
-              username_claim: preferred_username
+              username_claim: name
               allow_all: true
               oauth_callback_url: https://jupyter.local/hub/oauth_callback
               scope:
