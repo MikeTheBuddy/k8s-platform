@@ -37,6 +37,7 @@ spec:
               login_service: Dex
               username_claim: email
               allow_all: true
+              oauth_callback_url: https://jupyter.local/hub/oauth_callback
               scope:
                 - openid
                 - email
