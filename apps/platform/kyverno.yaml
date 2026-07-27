@@ -23,6 +23,10 @@ spec:
             namespace: kyverno
             interval: 30s
         backgroundController:
+          image:
+            registry: ghcr.io
+            repository: mikethebuddy/background-controller
+            tag: 637d4ce19d3bf213025d3151ab4d997e43e683c8
           serviceMonitor:
             enabled: true
             namespace: kyverno
