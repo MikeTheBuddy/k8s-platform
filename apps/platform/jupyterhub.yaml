@@ -46,6 +46,8 @@ spec:
                 - email
                 - profile
         singleuser:
+          extraEnv:
+            JUPYTER_RUNTIME_DIR: /tmp/jupyter-runtime
           storage:
             type: dynamic
             dynamic:
