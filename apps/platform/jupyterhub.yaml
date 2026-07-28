@@ -47,7 +47,13 @@ spec:
               - profile
         singleuser:
           storage:
-            type: none
+            type: dynamic
+            dynamic:
+              storageClass: rclone-smb
+              accessModes:
+                - ReadWriteMany
+            capacity: 1G
+            homeMountPath: /home/jovyan
           cloudMetadata:
             blockWithIptables: false
           profileList:
