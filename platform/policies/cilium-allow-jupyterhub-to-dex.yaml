@@ -1,0 +1,26 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-jupyterhub-to-dex
+  namespace: dex
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: dex
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: hub
+            io.kubernetes.pod.namespace: jupyterhub
+      toPorts:
+        - ports:
+            - port: "5556"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.policy.serviceaccount: rke2-traefik
+            io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "5556"
+              protocol: TCP

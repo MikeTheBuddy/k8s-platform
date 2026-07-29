@@ -1,0 +1,14 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-jupyterhub-ingress-to-dex
+  namespace: dex
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: dex
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: hub
+            io.kubernetes.pod.namespace: jupyterhub

@@ -1,0 +1,18 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-jupyterhub-egress-to-dex
+  namespace: jupyterhub
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/component: hub
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: dex
+            io.kubernetes.pod.namespace: dex
+      toPorts:
+        - ports:
+            - port: "5556"
+              protocol: TCP
