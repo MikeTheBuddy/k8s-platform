@@ -22,6 +22,9 @@ spec:
         proxy:
           service:
             type: ClusterIP
+          metrics:
+            serviceMonitor:
+              enabled: true
         hub:
           containerSecurityContext:
             allowPrivilegeEscalation: false
@@ -31,6 +34,8 @@ spec:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
+          serviceMonitor:
+            enabled: true
           db:
             pvc:
               storageClassName: local-path
