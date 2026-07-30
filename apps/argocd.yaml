@@ -17,6 +17,11 @@ spec:
         configs:
           params:
             server.insecure: "true"
+          ssh:
+            extraHosts: |
+              git.mst.edu ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFeFA/HIc8gcNJpe5wHOnvDbBy3/GoRMtZNNk/HbZUfsPOQqQlTSCq53EZm0KbP/NGpwknujGz6ZJhSJ//iz/mp2HhRnM1nCbiG/Bh4CJyB9hmCPIWGAvbYx9gOPTbXHNy3IqxaO8LrlKdn+sL9wOsQbwXGQBFVtCYJaJ4oOvo93jNNa/+QmeGkvp+4M3X74s6TpR9VFMzvxOYLyoHLA5DPraSQrHhWxOEA9wGsx1ziaRouf6PwMWbaVH3WHzPCarlxw0PYdoUrlCDCZKqVm4HEeqvpwkh8ZpBDiSXS/Uq66IBf1/1OQbVvKe8wD3cWfNPFgrJg5SwuImMDX0Uwg4r
+              git.mst.edu ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBDtmUwRrrKk8XTFtq9Q1fBhupj93f05Oq1hkx5XI0A1UjfJRDImXKXPvo29CsijrS8CdKq8vrwZmv6c0zKrkkNk=
+              git.mst.edu ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFf6eqkfcSEoO6sctY+fSc/dvUaWrmOz9mfkNmZBqCeh
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
